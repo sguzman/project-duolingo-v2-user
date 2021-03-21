@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\tsql.proto\x12\x03sql\"\x12\n\x03\x41\x63k\x12\x0b\n\x03msg\x18\x01 \x01(\x08\"\x14\n\x04User\x12\x0c\n\x04name\x18\x01 \x01(\t2\'\n\x03SQL\x12 \n\x07GetUser\x12\x08.sql.Ack\x1a\t.sql.User\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\tsql.proto\x12\x03sql\"\x12\n\x03\x41\x63k\x12\x0b\n\x03msg\x18\x01 \x01(\x08\"\x14\n\x04User\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x16\n\x05Users\x12\r\n\x05names\x18\x01 \x03(\t2M\n\x03SQL\x12 \n\x07GetUser\x12\x08.sql.Ack\x1a\t.sql.User\"\x00\x12$\n\nWriteUsers\x12\n.sql.Users\x1a\x08.sql.Ack\"\x00\x62\x06proto3'
 )
 
 
@@ -88,8 +88,41 @@ _USER = _descriptor.Descriptor(
   serialized_end=58,
 )
 
+
+_USERS = _descriptor.Descriptor(
+  name='Users',
+  full_name='sql.Users',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='names', full_name='sql.Users.names', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=60,
+  serialized_end=82,
+)
+
 DESCRIPTOR.message_types_by_name['Ack'] = _ACK
 DESCRIPTOR.message_types_by_name['User'] = _USER
+DESCRIPTOR.message_types_by_name['Users'] = _USERS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Ack = _reflection.GeneratedProtocolMessageType('Ack', (_message.Message,), {
@@ -106,6 +139,13 @@ User = _reflection.GeneratedProtocolMessageType('User', (_message.Message,), {
   })
 _sym_db.RegisterMessage(User)
 
+Users = _reflection.GeneratedProtocolMessageType('Users', (_message.Message,), {
+  'DESCRIPTOR' : _USERS,
+  '__module__' : 'sql_pb2'
+  # @@protoc_insertion_point(class_scope:sql.Users)
+  })
+_sym_db.RegisterMessage(Users)
+
 
 
 _SQL = _descriptor.ServiceDescriptor(
@@ -115,8 +155,8 @@ _SQL = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=60,
-  serialized_end=99,
+  serialized_start=84,
+  serialized_end=161,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetUser',
@@ -125,6 +165,16 @@ _SQL = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_ACK,
     output_type=_USER,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='WriteUsers',
+    full_name='sql.SQL.WriteUsers',
+    index=1,
+    containing_service=None,
+    input_type=_USERS,
+    output_type=_ACK,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

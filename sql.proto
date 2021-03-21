@@ -4,6 +4,7 @@ package sql;
 
 service SQL {
     rpc GetUser (Ack) returns (User) {}
+    rpc WriteUsers (Users) returns (Ack) {}
 }
 
 message Ack {
@@ -12,4 +13,8 @@ message Ack {
 
 message User {
     string name = 1;
+}
+
+message Users {
+    repeated string names = 1;
 }

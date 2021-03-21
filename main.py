@@ -18,7 +18,7 @@ import sql_pb2
 import sql_pb2_grpc
 
 
-name: str = 'HTTP'
+name: str = 'USER'
 v: str = 'v2'
 
 env_json_file: str = os.path.abspath('./env.json')
@@ -51,20 +51,6 @@ def init_env() -> None:
             log.info('Found env var "%s" with value "%s"', e, env[e])
 
 
-def init_log() -> None:
-    global log
-    global name
-    global v
-
-    logging.basicConfig(
-        format=f'[{v}] {name} %(asctime)s %(levelname)-8s %(message)s',
-        level=logging.DEBUG,
-        datefmt='%Y-%m-%d %H:%M:%S')
-
-    log = logging.getLogger(name)
-    log.info('hi')
-
-
 def init_atexit() -> None:
     def end():
         logging.info('bye')
@@ -93,10 +79,10 @@ def init_server() -> None:
     server.add_insecure_port(f'localhost:{port}')
 
     server.start()
-    logging.info('Started server at %s', port)
+    log.info('Started server at %s', port)
     server.wait_for_termination()
 
-    logging.info('Ending server')
+    log.info('Ending server')
 
 
 def init_json() -> None:
@@ -116,7 +102,7 @@ class Server(user_pb2_grpc.PingServicer):
         port: str = get('SQL_PORT')
         addr: str = f'{ip}:{port}'
 
-        logging.info('Connecting to SQL service at %s', addr)
+        log.info('Connecting to SQL service at %s', addr)
         channel = grpc.insecure_channel(addr)
         stub = sql_pb2_grpc.SQLStub(channel)
 
@@ -134,7 +120,7 @@ class Server(user_pb2_grpc.PingServicer):
         port: str = get('HTTP_PORT')
         addr: str = f'{ip}:{port}'
 
-        logging.info('Connecting to HTTP service at %s', addr)
+        log.info('Connecting to HTTP service at %s', addr)
         channel = grpc.insecure_channel(addr)
         stub = http_pb2_grpc.DuoStub(channel)
 
@@ -143,15 +129,30 @@ class Server(user_pb2_grpc.PingServicer):
 
         return friends
 
+    @staticmethod
+    def send_users(names: List[str]) -> bool:
+        ip: str = get('SQL_IP')
+        port: str = get('SQL_PORT')
+        addr: str = f'{ip}:{port}'
+
+        log.info('Connecting to SQL service at %s', addr)
+        channel = grpc.insecure_channel(addr)
+        stub = sql_pb2_grpc.SQLStub(channel)
+
+        response = stub.WriteUsers(sql_pb2.Users(names=names))
+        return response.msg
+
     def Trigger(self, request, context):
-        logging.info('Received trigger from clock')
+        log.info('Received trigger from clock')
         name: str = Server.get_user()
 
         friends: List[str] = Server.get_friends(name)
-        logging.info('Found friends for "%s":', name)
-        logging.info(friends)
+        log.info('Found friends for "%s":', name)
+        log.info(friends)
+        log.info('Sending friends to be written')
+        ack: bool = Server.send_users(friends)
 
-        return user_pb2.Ack(msg=True)
+        return user_pb2.Ack(msg=ack)
 
 
 def init() -> None:

@@ -19,12 +19,23 @@ class SQLStub(object):
                 request_serializer=sql__pb2.Ack.SerializeToString,
                 response_deserializer=sql__pb2.User.FromString,
                 )
+        self.WriteUsers = channel.unary_unary(
+                '/sql.SQL/WriteUsers',
+                request_serializer=sql__pb2.Users.SerializeToString,
+                response_deserializer=sql__pb2.Ack.FromString,
+                )
 
 
 class SQLServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def GetUser(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def WriteUsers(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -37,6 +48,11 @@ def add_SQLServicer_to_server(servicer, server):
                     servicer.GetUser,
                     request_deserializer=sql__pb2.Ack.FromString,
                     response_serializer=sql__pb2.User.SerializeToString,
+            ),
+            'WriteUsers': grpc.unary_unary_rpc_method_handler(
+                    servicer.WriteUsers,
+                    request_deserializer=sql__pb2.Users.FromString,
+                    response_serializer=sql__pb2.Ack.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -62,5 +78,22 @@ class SQL(object):
         return grpc.experimental.unary_unary(request, target, '/sql.SQL/GetUser',
             sql__pb2.Ack.SerializeToString,
             sql__pb2.User.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def WriteUsers(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/sql.SQL/WriteUsers',
+            sql__pb2.Users.SerializeToString,
+            sql__pb2.Ack.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

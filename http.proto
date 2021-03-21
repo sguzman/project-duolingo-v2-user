@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package http;
+
+service Duo {
+  rpc GetFriends (User) returns (Friends) {}
+}
+
+message User {
+    string name = 1;
+}
+
+message Friends {
+    repeated string names = 1;
+}

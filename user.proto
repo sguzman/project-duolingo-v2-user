@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package user;
+
+service Ping {
+    rpc Trigger (Ack) returns (Ack) {}
+}
+
+message Ack {
+    bool msg = 1;
+}

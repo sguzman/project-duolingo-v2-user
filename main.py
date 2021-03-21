@@ -12,6 +12,8 @@ from typing import Tuple
 
 import http_pb2
 import http_pb2_grpc
+import user_pb2
+import user_pb2_grpc
 
 
 name: str = 'HTTP'
@@ -25,7 +27,8 @@ log = None
 env = {}
 env_list: List[str] = [
     'PORT',
-    'HTTP_PORT'
+    'HTTP_PORT',
+    'HTTP_IP'
 ]
 
 
@@ -81,7 +84,7 @@ def init_log() -> None:
 
 def init_server() -> None:
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-    http_pb2_grpc.add_DuoServicer_to_server(Server(), server)
+    user_pb2_grpc.add_PingServicer_to_server(Server(), server)
     port = get('PORT')
     server.add_insecure_port(f'localhost:{port}')
 
@@ -102,51 +105,34 @@ def init_json() -> None:
         log.warning('Did not find env json file - using env vars')
 
 
-def get_friends(tup: Tuple[int, str]) -> List[Tuple[int, str]]:
-    global lingo
-
-    name: str = tup[1]
-    log.info('Querying friends for %s', tup)
-
-    lingo.set_username(name)
-
-    friends_resp = lingo.get_friends()
-    friends: List[Tuple[int, str]] = []
-
-    for fob in friends_resp:
-        user: str = fob['username']
-        idd: int = fob['id']
-        tup: Tuple[int, str] = (idd, user)
-        log.info('Found friend %d, %s for %s', idd, user, name)
-
-        friends.append(tup)
-
-    log.info('Found friends %d friends for %s', len(friends), name)
-    return friends
-
-
-class Server(http_pb2_grpc.DuoServicer):
+class Server(user_pb2_grpc.PingServicer):
     @staticmethod
-    def get_http_request(name: str) -> List[str]:
-        lingo.set_username(name)
-        friends_resp = lingo.get_friends()
+    def get_friends(name: str) -> List[str]:
         friends: List[str] = []
 
-        for fob in friends_resp:
-            fob: str = fob['username']
-            friends.append(fob)
+        ip: str = get('HTTP_IP')
+        port: str = get('HTTP_PORT')
+        addr: str = f'{ip}:{port}'
+
+        logging.info('Connecting to HTTP service at %s', addr)
+        channel = grpc.insecure_channel(addr)
+        stub = http_pb2_grpc.DuoStub(channel)
+
+        response = stub.GetFriends(http_pb2.User(name=name))
+        friends = response.names
 
         return friends
 
-    def GetFriends(self, request, context):
-        name: str = request.name
-        logging.info('Received username %s', name)
+    def Trigger(self, request, context):
+        logging.info('Received trigger from clock')
+        # TODO - need to trigger sql read
+        name = 'its_me_sguzman'
 
-        friends: List[str] = Server.get_http_request(name)
+        friends: List[str] = Server.get_friends(name)
         logging.info('Found friends for "%s":', name)
         logging.info(friends)
 
-        return http_pb2.Friends(names=friends)
+        return user_pb2.Ack(msg=True)
 
 
 def init() -> None:

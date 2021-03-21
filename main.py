@@ -14,6 +14,8 @@ import http_pb2
 import http_pb2_grpc
 import user_pb2
 import user_pb2_grpc
+import sql_pb2
+import sql_pb2_grpc
 
 
 name: str = 'HTTP'
@@ -28,7 +30,9 @@ env = {}
 env_list: List[str] = [
     'PORT',
     'HTTP_PORT',
-    'HTTP_IP'
+    'HTTP_IP',
+    'SQL_PORT',
+    'SQL_IP'
 ]
 
 
@@ -107,6 +111,22 @@ def init_json() -> None:
 
 class Server(user_pb2_grpc.PingServicer):
     @staticmethod
+    def get_user() -> str:
+        ip: str = get('SQL_IP')
+        port: str = get('SQL_PORT')
+        addr: str = f'{ip}:{port}'
+
+        logging.info('Connecting to SQL service at %s', addr)
+        channel = grpc.insecure_channel(addr)
+        stub = sql_pb2_grpc.SQLStub(channel)
+
+        response = stub.GetUser(sql_pb2.Ack(msg=True))
+        user: str = response.name
+
+        log.info('Got user %s', user)
+        return user
+
+    @staticmethod
     def get_friends(name: str) -> List[str]:
         friends: List[str] = []
 
@@ -125,8 +145,7 @@ class Server(user_pb2_grpc.PingServicer):
 
     def Trigger(self, request, context):
         logging.info('Received trigger from clock')
-        # TODO - need to trigger sql read
-        name = 'its_me_sguzman'
+        name: str = Server.get_user()
 
         friends: List[str] = Server.get_friends(name)
         logging.info('Found friends for "%s":', name)

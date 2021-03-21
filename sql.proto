@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sql;
+
+service SQL {
+    rpc GetUser (Ack) returns (User) {}
+}
+
+message Ack {
+    bool msg = 1;
+}
+
+message User {
+    string name = 1;
+}
